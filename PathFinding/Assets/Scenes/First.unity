@@ -395,6 +395,7 @@ MonoBehaviour:
   wallPrefab: {fileID: 5642925545918353174, guid: 6924d70592965f040a455e2ce4f4dd02, type: 3}
   startPrefab: {fileID: 5908998275163102691, guid: bb1061e6f0490fd4387944d76c12eec1, type: 3}
   destinationPrefab: {fileID: 1097308078645436536, guid: 025154eff9ab16040ac705eed3263eb3, type: 3}
+  isSetCells: 1
 --- !u!114 &702559004
 MonoBehaviour:
   m_ObjectHideFlags: 0

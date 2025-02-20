@@ -90,7 +90,9 @@ public class Board : MonoBehaviour
     {
         if (walls.ContainsKey(pos) == true)
         {
-            cell[pos.x, pos.y].isWall = false;
+            Vector3Int gridPos = grid.WorldToCell(pos);
+            cell[gridPos.x, gridPos.y].isWall = false;
+
             Destroy(walls[pos]);
             walls.Remove(pos);
         }
@@ -110,5 +112,21 @@ public class Board : MonoBehaviour
     public Cell GetCell(Vector3 pos)
     {
         return cell[grid.WorldToCell(pos).x, grid.WorldToCell(pos).y];
+    }
+
+    public void ClearBoard()
+    {
+        for(int x = 0; x < width; x++)
+        {
+            for(int y = 0; y < height; y++)
+            {
+                if (cell[x, y].isWall == true)
+                {
+                    cell[x, y].isWall = false;
+                    Destroy(walls[new Vector3Int(x, y)]);
+                    walls.Remove(new Vector3Int(x, y));
+                }
+            }
+        }
     }
 }

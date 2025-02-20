@@ -9,6 +9,8 @@ public class EditGrid : MonoBehaviour
     [SerializeField] private GameObject startPrefab;
     [SerializeField] private GameObject destinationPrefab;
 
+    [SerializeField] private bool isSetCells;
+
     private Grid grid;
     private Board board;
 
@@ -22,15 +24,25 @@ public class EditGrid : MonoBehaviour
 
     void Start()
     {
-        board.SetStartCell(startPrefab, grid.CellToWorld(new Vector3Int(0, 0, 0)));
-        board.SetDestinationCell(destinationPrefab, grid.CellToWorld(new Vector3Int(board.width - 1, board.height - 1, 0)));
+        if (isSetCells == true)
+        {
+            board.SetStartCell(startPrefab, grid.CellToWorld(new Vector3Int(0, 0, 0)));
+            board.SetDestinationCell(destinationPrefab, grid.CellToWorld(new Vector3Int(board.width - 1, board.height - 1, 0)));
+        }
     }
 
     void Update()
     {
         Vector3Int mouseCellPos = grid.WorldToCell(Utility.GetMouseWorldPosition());
-        Vector3Int startCellPos = grid.WorldToCell(board.start.transform.position);
-        Vector3Int destinationCellPos = grid.WorldToCell(board.destination.transform.position);
+        Vector3Int? startCellPos = null;
+        Vector3Int? destinationCellPos = null;
+
+        if (isSetCells == true)
+        {
+            startCellPos = grid.WorldToCell(board.start.transform.position);
+            destinationCellPos = grid.WorldToCell(board.destination.transform.position);
+        }
+
 
         if (Input.GetMouseButtonDown(0))
         {
@@ -68,7 +80,7 @@ public class EditGrid : MonoBehaviour
             }
         }
 
-        if(Input.GetMouseButton(2))
+        if (Input.GetMouseButton(2))
         {
             board.DeleteWall(mouseCellPos);
         }
