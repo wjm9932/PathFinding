@@ -5,14 +5,15 @@ using UnityEngine;
 public class GameManager : MonoBehaviour
 {
     [SerializeField] private Board board;
+    [SerializeField] private Character character;
 
     private LineRenderer lineRenderer;
     private PathFinder pathFinder;
-    private List<Cell> path = new List<Cell>();
+    private List<Vector3> path = new List<Vector3>();
     private void Awake()
     {
-        pathFinder = new PathFinder(board);
         lineRenderer = GetComponent<LineRenderer>();
+        pathFinder = new PathFinder(board, lineRenderer);
     }
     void Start()
     {
@@ -23,41 +24,21 @@ public class GameManager : MonoBehaviour
     {
         if (Input.GetKeyDown(KeyCode.Space) == true)
         {
-            path = pathFinder.FindPath(board.start.transform.position, board.destination.transform.position);
+            path = pathFinder.FindPath(board.start.transform.position, board.destination.transform.position, true);
             if (path == null)
             {
                 Debug.Log("There is no path to reach the target cell");
-                DrawPath();
             }
-            else
+        }
+
+
+        if(Input.GetMouseButtonDown(1))
+        {
+            if (character != null)
             {
-                DrawPath();
+                character.SetDestination(Utility.GetMouseWorldPosition(), pathFinder);
             }
         }
     }
 
-    private void DrawPath()
-    {
-        Grid grid = board.GetComponent<Grid>();
-        float cellOffset = grid.cellSize.x * 0.5f;
-
-        if (path == null)
-        {
-            lineRenderer.positionCount = 0;
-        }
-        else
-        {
-            lineRenderer.positionCount = path.Count;
-        }
-
-        for (int i = 0; i < lineRenderer.positionCount; i++)
-        {
-            // Cell ÁÂÇ¥¸¦ ¿ùµå ÁÂÇ¥·Î º¯È¯
-            Vector3 worldPos = grid.CellToWorld(new Vector3Int(path[i].x, path[i].y, 0));
-            worldPos.x += cellOffset;
-            worldPos.y += cellOffset;
-
-            lineRenderer.SetPosition(i, worldPos);
-        }
-    }
 }

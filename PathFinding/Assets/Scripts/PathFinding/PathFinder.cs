@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.IO;
 using UnityEngine;
 
 public class PathFinder
@@ -8,18 +9,25 @@ public class PathFinder
     private const int MOVE_DIAGONAL_COST = 14;
 
     private Board board;
+    private LineRenderer lineRenderer;
 
     private List<Cell> openList = new List<Cell>();
     private List<Cell> closedList = new List<Cell>();
 
 
-    public PathFinder(Board board)
+    public PathFinder(Board board, LineRenderer lineRenderer)
     {
         this.board = board;
+        this.lineRenderer = lineRenderer;
     }
 
-    public List<Cell> FindPath(Vector3 start, Vector3 end)
+    public List<Vector3> FindPath(Vector3 start, Vector3 end, bool isDrawPath = false)
     {
+        if (board.IsInRange(board.grid.WorldToCell(end)) == false)
+        {
+            return null;
+        }
+
         Reset();
 
         Cell startCell = board.GetCell(start);
@@ -35,7 +43,9 @@ public class PathFinder
 
             if (currentCell == targetCell)
             {
-                return CalculatePath(targetCell);
+                var path = CalculatePath(targetCell);
+                DrawPath(path);
+                return path;
             }
 
             openList.Remove(currentCell);
@@ -66,72 +76,20 @@ public class PathFinder
                 }
             }
         }
-
+        DrawPath(null);
         return null;
     }
 
-    public List<Cell> FindPath()
+    private List<Vector3> CalculatePath(Cell targetCell)
     {
-        Reset();
-
-        Cell startCell = board.cell[0, 0];
-        Cell targetCell = board.cell[board.width - 1, board.height - 1];
-
-        startCell.gCost = 0;
-        startCell.hCost = CalculateHCost(startCell, targetCell);
-        openList.Add(startCell);
-
-        while (openList.Count > 0)
-        {
-            Cell currentCell = GetLowestFCostCell(openList);
-
-            if (currentCell == targetCell)
-            {
-                return CalculatePath(targetCell);
-            }
-
-            openList.Remove(currentCell);
-            closedList.Add(currentCell);
-
-            foreach (Cell neighborCell in GetNeighborCell(currentCell))
-            {
-                if(closedList.Contains(neighborCell) == true)
-                {
-                    continue;
-                }
-                if(neighborCell.isWall == true || CanMoveDiagonally(currentCell, neighborCell) == false)
-                {
-                    continue;
-                }
-
-                int tentativeGCost = currentCell.gCost + CalculateGCost(currentCell, neighborCell);
-                if(tentativeGCost < neighborCell.gCost)
-                {
-                    neighborCell.cameFromCell = currentCell;
-                    neighborCell.gCost = tentativeGCost;
-                    neighborCell.hCost = CalculateHCost(neighborCell, targetCell);
-
-                    if(openList.Contains(neighborCell) == false)
-                    {
-                        openList.Add(neighborCell);
-                    }
-                }
-            }
-        }
-
-        return null;
-    }
-
-    private List<Cell> CalculatePath(Cell targetCell)
-    {
-        List<Cell> path = new List<Cell>();
+        List<Vector3> path = new List<Vector3>();
         Cell currentCell = targetCell;
 
-        path.Add(targetCell);
-        
-        while(currentCell.cameFromCell != null)
+        path.Add(new Vector3(targetCell.x, targetCell.y));
+
+        while (currentCell.cameFromCell != null)
         {
-            path.Add(currentCell.cameFromCell);
+            path.Add(new Vector3(currentCell.cameFromCell.x, currentCell.cameFromCell.y));
             currentCell = currentCell.cameFromCell;
         }
 
@@ -141,7 +99,7 @@ public class PathFinder
 
     private bool CanMoveDiagonally(Cell currentCell, Cell neighbor)
     {
-        if(GetCell(currentCell.x, neighbor.y).isWall == true && GetCell(neighbor.x, currentCell.y).isWall == true)
+        if (GetCell(currentCell.x, neighbor.y).isWall == true && GetCell(neighbor.x, currentCell.y).isWall == true)
         {
             return false;
         }
@@ -162,11 +120,11 @@ public class PathFinder
 
         if (xDistance != 0 && yDistance != 0)
         {
-            return MOVE_DIAGONAL_COST;  
+            return MOVE_DIAGONAL_COST;
         }
         else
         {
-            return MOVE_STRAIGHT_COST; 
+            return MOVE_STRAIGHT_COST;
         }
     }
 
@@ -246,9 +204,33 @@ public class PathFinder
     }
 
     private void Reset()
-    { 
+    {
         openList.Clear();
         closedList.Clear();
         board.ResetCells();
+    }
+
+    private void DrawPath(List<Vector3> path)
+    {
+        Grid grid = board.GetComponent<Grid>();
+        float cellOffset = grid.cellSize.x * 0.5f;
+
+        if (path == null)
+        {
+            lineRenderer.positionCount = 0;
+        }
+        else
+        {
+            lineRenderer.positionCount = path.Count;
+        }
+
+        for (int i = 0; i < lineRenderer.positionCount; i++)
+        {
+            Vector3 worldPos = new Vector3(path[i].x, path[i].y, 0);
+            worldPos.x += cellOffset;
+            worldPos.y += cellOffset;
+
+            lineRenderer.SetPosition(i, worldPos);
+        }
     }
 }
