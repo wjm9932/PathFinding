@@ -13,8 +13,7 @@ public class Cell
     public int fCost { get { return gCost + hCost; } }
 
     public bool isWall;
-    public bool isStart;
-    public bool isDestination;
+
     public Cell cameFromCell;
 
     public Cell(int x, int y, bool isWall = false)

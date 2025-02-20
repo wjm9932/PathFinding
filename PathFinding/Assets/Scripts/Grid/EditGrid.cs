@@ -6,9 +6,13 @@ public class EditGrid : MonoBehaviour
 {
     [SerializeField] private GameObject wallPrefab;
 
+    [SerializeField] private GameObject startPrefab;
+    [SerializeField] private GameObject destinationPrefab;
 
     private Grid grid;
     private Board board;
+
+    private GameObject draggingObject;
 
     private void Awake()
     {
@@ -18,27 +22,55 @@ public class EditGrid : MonoBehaviour
 
     void Start()
     {
-
+        board.SetStartCell(startPrefab, grid.CellToWorld(new Vector3Int(0, 0, 0)));
+        board.SetDestinationCell(destinationPrefab, grid.CellToWorld(new Vector3Int(board.width - 1, board.height - 1, 0)));
     }
 
     void Update()
     {
-        if (Input.GetMouseButton(0))
+        Vector3Int mouseCellPos = grid.WorldToCell(Utility.GetMouseWorldPosition());
+        Vector3Int startCellPos = grid.WorldToCell(board.start.transform.position);
+        Vector3Int destinationCellPos = grid.WorldToCell(board.destination.transform.position);
+
+        if (Input.GetMouseButtonDown(0))
         {
-            Vector3Int gridPosition = grid.WorldToCell(Utility.GetMouseWorldPosition());
-            if (board.IsInRange(gridPosition) == true)
+            if (mouseCellPos == startCellPos)
             {
-                if (board.IsWall(gridPosition) == false)
+                draggingObject = board.start;
+            }
+            else if (mouseCellPos == destinationCellPos)
+            {
+                draggingObject = board.destination;
+            }
+
+        }
+
+        if (Input.GetMouseButtonUp(0))
+        {
+            draggingObject = null;
+        }
+
+        if (draggingObject != null)
+        {
+            if (board.IsInRange(mouseCellPos) && !board.IsWall(mouseCellPos))
+            {
+                draggingObject.transform.position = grid.CellToWorld(mouseCellPos);
+            }
+        }
+        else if (Input.GetMouseButton(0))
+        {
+            if (board.IsInRange(mouseCellPos) == true)
+            {
+                if (board.IsWall(mouseCellPos) == false && !(startCellPos == mouseCellPos || destinationCellPos == mouseCellPos))
                 {
-                    board.SetWall(wallPrefab, grid.CellToWorld(gridPosition), wallPrefab.transform.rotation);
+                    board.SetWall(wallPrefab, grid.CellToWorld(mouseCellPos), mouseCellPos, wallPrefab.transform.rotation);
                 }
             }
         }
 
         if(Input.GetMouseButton(1))
         {
-            Vector3Int gridPosition = grid.WorldToCell(Utility.GetMouseWorldPosition());
-            board.DeleteWall(gridPosition);
+            board.DeleteWall(mouseCellPos);
         }
     }
 }

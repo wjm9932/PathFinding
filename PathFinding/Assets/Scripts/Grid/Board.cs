@@ -9,12 +9,16 @@ public class Board : MonoBehaviour
 
     public Cell[,] cell { get; private set; }
 
-    public Dictionary<Vector2Int, GameObject> walls = new Dictionary<Vector2Int, GameObject>();
+    public Dictionary<Vector3Int, GameObject> walls = new Dictionary<Vector3Int, GameObject>();
+    public GameObject start { get; private set; }
+    public GameObject destination { get; private set; }
+    public Grid grid { get; private set; }
 
     public int width { get; private set; }
     public int height { get; private set; }
 
-    void Start()
+
+    private void Awake()
     {
         width = Mathf.RoundToInt(board.transform.localScale.x * 10f);
         height = Mathf.RoundToInt(board.transform.localScale.z * 10f);
@@ -29,26 +33,31 @@ public class Board : MonoBehaviour
             }
         }
 
+        grid = GetComponent<Grid>();
+    }
+
+    void Start()
+    {
+
     }
     private void Update()
     {
         //Debug.Log(cell[0, 0].isWall);
     }
-    public bool IsInRange(Vector3 position)
+    public bool IsInRange(Vector3Int position)
     {
         return position.x >= 0 && position.x < width &&
        position.y >= 0 && position.y < height;
     }
 
-    public bool IsWall(Vector3 pos)
+    public bool IsWall(Vector3Int pos)
     {
         if (IsInRange(pos) == false)
         {
             return false;
         }
 
-        Vector2Int gridPos = ConvertToGridIndex(pos);
-        if (cell[gridPos.x, gridPos.y].isWall == false)
+        if (cell[pos.x, pos.y].isWall == false)
         {
             return false;
         }
@@ -56,32 +65,32 @@ public class Board : MonoBehaviour
         return true;
     }
 
-    public void SetWall(GameObject wallPrefab, Vector3 pos, Quaternion rotation)
+    public void SetWall(GameObject wallPrefab, Vector3 pos, Vector3Int cellIndex, Quaternion rotation)
     {
-        Vector2Int gridPos = ConvertToGridIndex(pos);
-
         var wall = Instantiate(wallPrefab, pos, rotation);
-        walls.Add(gridPos, wall);
+        walls.Add(cellIndex, wall);
 
-        cell[gridPos.x, gridPos.y].isWall = true;
+        cell[cellIndex.x, cellIndex.y].isWall = true;
     }
 
-    public void DeleteWall(Vector3 pos)
+    public void SetStartCell(GameObject startPrefab, Vector3 pos)
     {
-        Vector2Int gridPos = ConvertToGridIndex(pos);
-        if (walls.ContainsKey(gridPos) == true)
+        start = Instantiate(startPrefab, pos, Quaternion.identity);
+    }
+
+    public void SetDestinationCell(GameObject destinationPrefab, Vector3 pos)
+    {
+        destination = Instantiate(destinationPrefab, pos, Quaternion.identity);
+    }
+
+    public void DeleteWall(Vector3Int pos)
+    {
+        if (walls.ContainsKey(pos) == true)
         {
-            cell[gridPos.x, gridPos.y].isWall = false;
-            Destroy(walls[gridPos]);
-            walls.Remove(gridPos);
+            cell[pos.x, pos.y].isWall = false;
+            Destroy(walls[pos]);
+            walls.Remove(pos);
         }
-    }
-
-    private Vector2Int ConvertToGridIndex(Vector3 worldPos)
-    {
-        int gridX = Mathf.FloorToInt(worldPos.x);
-        int gridY = Mathf.FloorToInt(worldPos.y);
-        return new Vector2Int(gridX, gridY);
     }
 
     public void ResetCells()
@@ -93,5 +102,10 @@ public class Board : MonoBehaviour
                 cell[x, y].Reset();
             }
         }
+    }
+
+    public Cell GetCell(Vector3 pos)
+    {
+        return cell[grid.WorldToCell(pos).x, grid.WorldToCell(pos).y];
     }
 }

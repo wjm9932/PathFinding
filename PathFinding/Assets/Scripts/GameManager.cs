@@ -23,7 +23,7 @@ public class GameManager : MonoBehaviour
     {
         if (Input.GetKeyDown(KeyCode.Space) == true)
         {
-            path = pathFinder.FindPath();
+            path = pathFinder.FindPath(board.start.transform.position, board.destination.transform.position);
             if (path == null)
             {
                 Debug.Log("There is no path to reach the target cell");

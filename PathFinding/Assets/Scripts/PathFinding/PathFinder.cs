@@ -18,6 +18,58 @@ public class PathFinder
         this.board = board;
     }
 
+    public List<Cell> FindPath(Vector3 start, Vector3 end)
+    {
+        Reset();
+
+        Cell startCell = board.GetCell(start);
+        Cell targetCell = board.GetCell(end);
+
+        startCell.gCost = 0;
+        startCell.hCost = CalculateHCost(startCell, targetCell);
+        openList.Add(startCell);
+
+        while (openList.Count > 0)
+        {
+            Cell currentCell = GetLowestFCostCell(openList);
+
+            if (currentCell == targetCell)
+            {
+                return CalculatePath(targetCell);
+            }
+
+            openList.Remove(currentCell);
+            closedList.Add(currentCell);
+
+            foreach (Cell neighborCell in GetNeighborCell(currentCell))
+            {
+                if (closedList.Contains(neighborCell) == true)
+                {
+                    continue;
+                }
+                if (neighborCell.isWall == true || CanMoveDiagonally(currentCell, neighborCell) == false)
+                {
+                    continue;
+                }
+
+                int tentativeGCost = currentCell.gCost + CalculateGCost(currentCell, neighborCell);
+                if (tentativeGCost < neighborCell.gCost)
+                {
+                    neighborCell.cameFromCell = currentCell;
+                    neighborCell.gCost = tentativeGCost;
+                    neighborCell.hCost = CalculateHCost(neighborCell, targetCell);
+
+                    if (openList.Contains(neighborCell) == false)
+                    {
+                        openList.Add(neighborCell);
+                    }
+                }
+            }
+        }
+
+        return null;
+    }
+
     public List<Cell> FindPath()
     {
         Reset();
