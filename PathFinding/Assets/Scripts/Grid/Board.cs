@@ -1,10 +1,11 @@
-using System.Collections;
+using System;
 using System.Collections.Generic;
 using UnityEngine;
-using static UnityEditor.PlayerSettings;
 
 public class Board : MonoBehaviour
 {
+    public event Action<Cell> onBoardChanged;
+
     [SerializeField] private GameObject board;
 
     public Cell[,] cell { get; private set; }
@@ -71,6 +72,8 @@ public class Board : MonoBehaviour
         walls.Add(cellIndex, wall);
 
         cell[cellIndex.x, cellIndex.y].isWall = true;
+
+        onBoardChanged?.Invoke(cell[cellIndex.x, cellIndex.y]);
     }
 
     public void SetStartCell(GameObject startPrefab, Vector3 pos)

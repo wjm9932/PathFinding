@@ -21,7 +21,7 @@ public class PathFinder
         this.lineRenderer = lineRenderer;
     }
 
-    public List<Vector3> FindPath(Vector3 start, Vector3 end, bool isDrawPath = false)
+    public List<Cell> FindPath(Vector3 start, Vector3 end, bool isDrawPath = false)
     {
         if (board.IsInRange(board.grid.WorldToCell(end)) == false)
         {
@@ -80,16 +80,16 @@ public class PathFinder
         return null;
     }
 
-    private List<Vector3> CalculatePath(Cell targetCell)
+    private List<Cell> CalculatePath(Cell targetCell)
     {
-        List<Vector3> path = new List<Vector3>();
+        List<Cell> path = new List<Cell>();
         Cell currentCell = targetCell;
 
-        path.Add(new Vector3(targetCell.x, targetCell.y));
+        path.Add(targetCell);
 
         while (currentCell.cameFromCell != null)
         {
-            path.Add(new Vector3(currentCell.cameFromCell.x, currentCell.cameFromCell.y));
+            path.Add(currentCell.cameFromCell);
             currentCell = currentCell.cameFromCell;
         }
 
@@ -97,7 +97,7 @@ public class PathFinder
         return path;
     }
 
-    private bool CanMoveDiagonally(Cell currentCell, Cell neighbor)
+    public bool CanMoveDiagonally(Cell currentCell, Cell neighbor)
     {
         if (GetCell(currentCell.x, neighbor.y).isWall == true && GetCell(neighbor.x, currentCell.y).isWall == true)
         {
@@ -210,7 +210,7 @@ public class PathFinder
         board.ResetCells();
     }
 
-    private void DrawPath(List<Vector3> path)
+    private void DrawPath(List<Cell> path)
     {
         Grid grid = board.GetComponent<Grid>();
         float cellOffset = grid.cellSize.x * 0.5f;
@@ -233,4 +233,5 @@ public class PathFinder
             lineRenderer.SetPosition(i, worldPos);
         }
     }
+
 }

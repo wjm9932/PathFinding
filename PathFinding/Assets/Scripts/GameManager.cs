@@ -9,7 +9,7 @@ public class GameManager : MonoBehaviour
 
     private LineRenderer lineRenderer;
     private PathFinder pathFinder;
-    private List<Vector3> path = new List<Vector3>();
+    private List<Cell> path = new List<Cell>();
     private void Awake()
     {
         lineRenderer = GetComponent<LineRenderer>();
@@ -17,7 +17,8 @@ public class GameManager : MonoBehaviour
     }
     void Start()
     {
-
+        if(character != null)
+        board.onBoardChanged += character.ChangePathIfNeeded;
     }
 
     void Update()

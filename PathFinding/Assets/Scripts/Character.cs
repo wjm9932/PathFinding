@@ -7,15 +7,12 @@ public class Character : MonoBehaviour
 {
     [SerializeField] private float speed;
 
-    private List<Vector3> path;
+    private List<Cell> path;
     private int currentPathIndex;
-    // Start is called before the first frame update
-    void Start()
-    {
-        
-    }
 
-    // Update is called once per frame
+    private PathFinder pathFinder;
+    private Vector3 destination;
+
     void Update()
     {
         Move();
@@ -25,7 +22,7 @@ public class Character : MonoBehaviour
     {
         if(path != null)
         {
-            Vector3 destination = path[currentPathIndex];
+            Vector3 destination = new Vector3(path[currentPathIndex].x, path[currentPathIndex].y);
             destination.x += 0.5f;
             destination.y += 0.5f;
 
@@ -48,14 +45,36 @@ public class Character : MonoBehaviour
     private void StopMoving()
     {
         path = null;
+        pathFinder = null;
+    }
+
+
+    public void ChangePathIfNeeded(Cell cell)
+    {
+        if(pathFinder != null)
+        {
+            for (int i = currentPathIndex; i < path.Count; i++)
+            {
+                if (path[i] == cell || (i < path.Count - 1 && !pathFinder.CanMoveDiagonally(path[i], path[i + 1])))
+                {
+                    SetDestination(destination, pathFinder);
+                    return;
+                }
+            }
+        }
     }
 
     public void SetDestination(Vector3 targetPosition, PathFinder pathFinder)
     {
+        StopMoving();
+
         var tentativePath = pathFinder.FindPath(transform.position, targetPosition, true);
 
         if(tentativePath != null)
         {
+            destination = targetPosition;
+            this.pathFinder = pathFinder;
+
             path = tentativePath;
             currentPathIndex = 0;
 
